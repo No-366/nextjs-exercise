@@ -135,3 +135,39 @@ export const startCall = async () => {
 export const hasValidAccessToken = () => {
   return !!localStorage.getItem(ACCESS_TOKEN_KEY);
 };
+
+export async function startMeeting(email: string) {
+  window.location.href = `webexteams://meet?sip=${email}`;
+}
+
+// 메시지 전송
+export const sendMessage = async (message: string) => {
+  const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+  if (!token) {
+    throw new Error("No access token found");
+  }
+
+  try {
+    const response = await fetch(`${WEBEX_CONFIG.apiBaseUrl}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        toPersonEmail: WEBEX_CONFIG.targetEmail,
+        markdown: message,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to send message");
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Message sending error:", error);
+    throw error;
+  }
+};
