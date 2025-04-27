@@ -50,7 +50,7 @@ export default function Sidebar({ className }: SidebarProps) {
     <div className={cn("border-r bg-card px-4 py-6", className)}>
       {/* 로고 */}
       <div className="mb-8 px-4">
-        <h1 className="text-xl font-bold">SafeCo Dashboard</h1>
+        <h1 className="text-xl font-bold">세이프코 대시보드</h1>
       </div>
 
       {/* 메뉴 */}

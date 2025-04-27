@@ -57,6 +57,13 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  createMeeting,
+  getAuthUrl,
+  hasValidAccessToken,
+  startCall,
+} from "@/lib/webex";
+import { toast } from "sonner";
 
 // 타입 정의
 interface Worker {
@@ -485,15 +492,79 @@ export default function MonitoringPage() {
   };
 
   // 미팅 시작 처리
-  const handleStartMeeting = () => {
-    setMeetingDialogOpen(false);
-    setSelectedWorkers([]);
+  const handleStartMeeting = async () => {
+    try {
+      // 액세스 토큰이 없으면 인증 페이지로 리다이렉트
+      if (!hasValidAccessToken()) {
+        window.location.href = getAuthUrl();
+        return;
+      }
+
+      // 선택된 작업자 정보로 미팅 제목 생성
+      const selectedWorkerNames = selectedWorkers
+        .map((id) => workers.find((w) => w.id === id)?.name)
+        .filter(Boolean)
+        .join(", ");
+
+      const meetingTitle = `안전 관리 미팅 - ${selectedWorkerNames}`;
+
+      // 미팅 생성
+      const meeting = await createMeeting(meetingTitle);
+
+      // 미팅 URL이 있으면 새 창에서 열기
+      // if (meeting.webLink) {
+      //   window.open(meeting.webLink, "_blank");
+      //   toast.success("미팅이 생성되었습니다.");
+      // } else {
+      //   toast.error("미팅 URL을 찾을 수 없습니다.");
+      // }
+      // 미팅 생성 후 처리하는 부분을 다음과 같이 수정
+      if (meeting.sipAddress) {
+        // webexteams:// 프로토콜을 사용하여 앱으로 연결
+        const webexAppUrl = `webexteams://meet/${
+          meeting.sipAddress.split("@")[0]
+        }`;
+        // 앱이 설치되어 있지 않은 경우를 위한 폴백 URL
+        const webBrowserUrl = meeting.webLink;
+
+        // 앱으로 연결 시도
+        window.location.href = webexAppUrl;
+
+        // 1초 후에도 페이지가 남아있다면 (앱이 없는 경우) 브라우저에서 열기
+        setTimeout(() => {
+          if (document.hasFocus()) {
+            window.location.href = webBrowserUrl;
+          }
+        }, 100000);
+      }
+    } catch (error) {
+      console.error("미팅 생성 오류:", error);
+      toast.error("미팅 생성에 실패했습니다.");
+    } finally {
+      setMeetingDialogOpen(false);
+      setSelectedWorkers([]);
+    }
   };
 
   // 전화 연결 처리
-  const handleStartCall = () => {
-    setCallDialogOpen(false);
-    setSelectedWorkers([]);
+  const handleStartCall = async () => {
+    try {
+      // 액세스 토큰이 없으면 인증 페이지로 리다이렉트
+      if (!hasValidAccessToken()) {
+        window.location.href = getAuthUrl();
+        return;
+      }
+
+      // 전화 연결 시도
+      await startCall();
+      toast.success("전화 연결이 시작되었습니다.");
+    } catch (error) {
+      console.error("전화 연결 오류:", error);
+      toast.error("전화 연결에 실패했습니다.");
+    } finally {
+      setCallDialogOpen(false);
+      setSelectedWorkers([]);
+    }
   };
 
   // 구역 정보 렌더링

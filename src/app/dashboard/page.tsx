@@ -5,7 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Activity, Users } from "lucide-react";
@@ -30,13 +29,6 @@ import { cn } from "@/lib/utils";
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">종합 현황</h1>
-        <Button>
-          <Activity className="mr-2 h-4 w-4" />
-          업데이트
-        </Button>
-      </div>
       {/* 긴급 알림 배너 */}
       <Alert variant="destructive" className="border-red-500 bg-red-50">
         <AlertTriangle className="h-4 w-4" />
