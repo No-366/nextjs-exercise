@@ -59,17 +59,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 
 // 타입 정의
-type Worker = {
+interface Worker {
   id: string;
   name: string;
   role: string;
-  heartRate: number;
-  temperature: number;
   location: string;
+  team: string;
   status: "normal" | "warning";
   workHours: number;
-  team: string;
-};
+  heartRate: number;
+  temperature: number;
+}
 
 type Camera = {
   id: string;
@@ -120,48 +120,70 @@ type SensorWithPosition = Sensor & { position: Position };
 // 샘플 데이터
 const workers: Worker[] = [
   {
-    id: "W328",
+    id: "w1",
     name: "김철수",
-    role: "용접공",
-    heartRate: 85,
-    temperature: 36.5,
+    role: "안전관리자",
     location: "A구역",
-    status: "normal",
-    workHours: 4.5,
     team: "1팀",
+    status: "normal",
+    workHours: 4,
+    heartRate: 75,
+    temperature: 36.5,
   },
   {
-    id: "W415",
+    id: "w2",
     name: "이영희",
-    role: "도장공",
+    role: "작업자",
+    location: "A구역",
+    team: "1팀",
+    status: "normal",
+    workHours: 3,
+    heartRate: 80,
+    temperature: 36.7,
+  },
+  {
+    id: "w3",
+    name: "박지성",
+    role: "작업자",
+    location: "B구역",
+    team: "2팀",
+    status: "warning",
+    workHours: 5,
     heartRate: 95,
     temperature: 37.2,
-    location: "C구역",
-    status: "warning",
-    workHours: 3.2,
-    team: "2팀",
   },
   {
-    id: "W223",
-    name: "박지성",
-    role: "전기공",
-    heartRate: 88,
-    temperature: 36.7,
-    location: "B구역",
-    status: "normal",
-    workHours: 5.5,
-    team: "1팀",
-  },
-  {
-    id: "W512",
-    name: "최민수",
+    id: "w4",
+    name: "손흥민",
     role: "안전관리자",
-    heartRate: 82,
-    temperature: 36.4,
-    location: "A구역",
-    status: "normal",
-    workHours: 2.8,
+    location: "B구역",
+    team: "2팀",
+    status: "warning",
+    workHours: 6,
+    heartRate: 90,
+    temperature: 37.1,
+  },
+  {
+    id: "w5",
+    name: "정우영",
+    role: "작업자",
+    location: "C구역",
     team: "3팀",
+    status: "normal",
+    workHours: 2,
+    heartRate: 78,
+    temperature: 36.4,
+  },
+  {
+    id: "w6",
+    name: "황희찬",
+    role: "작업자",
+    location: "C구역",
+    team: "3팀",
+    status: "normal",
+    workHours: 4,
+    heartRate: 82,
+    temperature: 36.6,
   },
 ];
 
@@ -251,7 +273,7 @@ const workersWithPosition: WorkerWithPosition[] = [
   },
   {
     ...workers[1],
-    position: { x: 75, y: 65 }, // C구역
+    position: { x: 75, y: 65 }, // A구역
   },
   {
     ...workers[2],
@@ -259,7 +281,15 @@ const workersWithPosition: WorkerWithPosition[] = [
   },
   {
     ...workers[3],
-    position: { x: 25, y: 40 }, // A구역
+    position: { x: 25, y: 40 }, // B구역
+  },
+  {
+    ...workers[4],
+    position: { x: 50, y: 70 }, // C구역
+  },
+  {
+    ...workers[5],
+    position: { x: 80, y: 80 }, // C구역
   },
 ];
 
@@ -341,6 +371,33 @@ const areaInfos: Record<string, AreaInfo> = {
   },
 };
 
+// 웹엑스 웹훅 전송 함수
+const sendWebexMessage = async (message: string) => {
+  try {
+    const webhookUrl =
+      "https://webexapis.com/v1/webhooks/incoming/Y2lzY29zcGFyazovL3VybjpURUFNOnVzLXdlc3QtMl9yL1dFQkhPT0svYjdjMTJiNjgtNTQzNy00OTI2LWJmZDctNGEzNzMzODdjZDQy"; // 실제 웹훅 URL로 교체 필요
+
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        markdown: `**[세이프코 안전 관리자]**\n\n${message}`,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("메시지 전송 실패");
+    }
+
+    return true;
+  } catch (error) {
+    console.error("웹엑스 메시지 전송 오류:", error);
+    return false;
+  }
+};
+
 export default function MonitoringPage() {
   const [selectedType, setSelectedType] = useState("all");
   const [selectedItem, setSelectedItem] = useState<MonitoringItem | null>(null);
@@ -410,8 +467,18 @@ export default function MonitoringPage() {
     return workers.filter((worker) => worker.location.includes(area));
   };
 
-  // 메시지 전송 처리
-  const handleSendMessage = () => {
+  // 메시지 전송 처리 함수 수정
+  const handleSendMessage = async () => {
+    const success = await sendWebexMessage(messageText);
+
+    if (success) {
+      // 성공 시 토스트 메시지 표시 또는 다른 피드백
+      console.log("메시지가 성공적으로 전송되었습니다.");
+    } else {
+      // 실패 시 에러 메시지 표시
+      console.error("메시지 전송에 실패했습니다.");
+    }
+
     setMessageDialogOpen(false);
     setSelectedWorkers([]);
     setMessageText("");
@@ -572,17 +639,17 @@ export default function MonitoringPage() {
             <div>
               <h3 className="text-lg font-semibold">{selectedItem.name}</h3>
               <p className="text-sm text-muted-foreground">
-                {selectedItem.role} ({selectedItem.team})
+                {selectedItem.role} ({selectedItem.location})
               </p>
             </div>
             <Badge
               variant="outline"
               className={cn(
-                selectedItem.status === "warning" &&
+                selectedItem.location === "B구역" &&
                   "border-yellow-500 text-yellow-700 bg-yellow-50"
               )}
             >
-              {selectedItem.status === "normal" ? "정상" : "주의"}
+              {selectedItem.location}
             </Badge>
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -803,7 +870,7 @@ export default function MonitoringPage() {
             <div
               className={cn(
                 "w-8 h-8 rounded-full cursor-pointer transform -translate-x-1/2 -translate-y-1/2 transition-all group-hover:scale-125 ring-2 ring-white shadow-lg",
-                worker.status === "normal" ? "bg-green-500" : "bg-yellow-500",
+                worker.location === "B구역" ? "bg-yellow-500" : "bg-green-500",
                 selectedItem?.id === worker.id && "ring-4 ring-blue-500"
               )}
               onClick={() => handleItemClick(worker)}
@@ -973,15 +1040,17 @@ export default function MonitoringPage() {
                               <div
                                 className={cn(
                                   "flex items-center gap-3 rounded-lg p-2 hover:bg-accent cursor-pointer",
-                                  item.status === "warning" && "bg-yellow-50"
+                                  item.location === "B구역"
+                                    ? "bg-yellow-50"
+                                    : "bg-green-50"
                                 )}
                               >
                                 <div
                                   className={cn(
                                     "h-2 w-2 rounded-full",
-                                    item.status === "normal"
-                                      ? "bg-green-500"
-                                      : "bg-yellow-500"
+                                    item.location === "B구역"
+                                      ? "bg-yellow-500"
+                                      : "bg-green-500"
                                   )}
                                 />
                                 <div className="flex-1 space-y-1">
@@ -993,7 +1062,7 @@ export default function MonitoringPage() {
                                       variant="outline"
                                       className={cn(
                                         "text-xs",
-                                        item.status === "warning" &&
+                                        item.location === "B구역" &&
                                           "border-yellow-500 text-yellow-700 bg-yellow-50"
                                       )}
                                     >
@@ -1029,7 +1098,7 @@ export default function MonitoringPage() {
                                   {item.name}
                                 </h4>
                                 <div className="text-sm text-muted-foreground">
-                                  {item.role} ({item.team})
+                                  {item.role} ({item.location})
                                 </div>
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                   <div className="space-y-1">
