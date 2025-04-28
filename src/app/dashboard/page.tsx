@@ -25,6 +25,83 @@ import {
   Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RiskGauge } from "@/components/dashboard/risk-gauge";
+import { RiskTable } from "@/components/dashboard/risk-table";
+import { AreaWorkersChart } from "@/components/dashboard/area-workers-chart";
+import { AlertDistributionChart } from "@/components/dashboard/alert-distribution-chart";
+
+// 구역별 위험도 데이터
+const areaRiskData = [
+  {
+    name: "A구역",
+    "가스 농도": 20,
+    온도: 25,
+    소음: 30,
+    분진: 15,
+  },
+  {
+    name: "B구역",
+    "가스 농도": 45,
+    온도: 60,
+    소음: 40,
+    분진: 35,
+  },
+  {
+    name: "C구역",
+    "가스 농도": 30,
+    온도: 35,
+    소음: 25,
+    분진: 20,
+  },
+];
+
+// 구역별 인원수 데이터
+const areaWorkersData = [
+  {
+    name: "A구역",
+    workers: 12,
+    color: "#3b82f6",
+  },
+  {
+    name: "B구역",
+    workers: 8,
+    color: "#3b82f6",
+  },
+  {
+    name: "C구역",
+    workers: 5,
+    color: "#3b82f6",
+  },
+  {
+    name: "D구역",
+    workers: 15,
+    color: "#3b82f6",
+  },
+];
+
+// 알림 유형 분포 데이터
+const alertDistributionData = [
+  {
+    name: "낙상 감지",
+    value: 2,
+    color: "#ef4444",
+  },
+  {
+    name: "고온 경고",
+    value: 3,
+    color: "#f97316",
+  },
+  {
+    name: "위치 이탈",
+    value: 1,
+    color: "#eab308",
+  },
+  {
+    name: "장비 이상",
+    value: 2,
+    color: "#3b82f6",
+  },
+];
 
 export default function DashboardPage() {
   return (
@@ -36,7 +113,6 @@ export default function DashboardPage() {
           ⚡ 2건의 긴급 상황 발생! (1건 낙상, 1건 고온 경고)
         </AlertDescription>
       </Alert>
-
       {/* 작업자 상태 카드 그리드 */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -77,6 +153,64 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">170대</div>
             <p className="text-xs text-muted-foreground">정상 가동률 97%</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 위험도 관련 카드들을 그리드로 배치 */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* 전체 위험도 게이지 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>전체 현장 위험도</CardTitle>
+            <CardDescription>
+              실시간 현장 전체의 위험 수준을 표시합니다
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RiskGauge value={35} />
+          </CardContent>
+        </Card>
+
+        {/* 구역별 위험도 표 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>구역별 위험도</CardTitle>
+            <CardDescription>
+              각 구역별 위험 요소 수준을 표시합니다
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RiskTable data={areaRiskData} />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 추가 차트 카드들 */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* 구역별 인원수 차트 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>구역별 인원 현황</CardTitle>
+            <CardDescription>
+              각 구역별 현재 작업자 수를 보여줍니다
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AreaWorkersChart data={areaWorkersData} />
+          </CardContent>
+        </Card>
+
+        {/* 알림 유형 분포 차트 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>알림 유형 분포</CardTitle>
+            <CardDescription>
+              금일 발생한 알림의 유형별 분포를 보여줍니다
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AlertDistributionChart data={alertDistributionData} />
           </CardContent>
         </Card>
       </div>
