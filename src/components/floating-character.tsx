@@ -11,7 +11,7 @@ export function FloatingCharacter() {
   return (
     <>
       <div
-        className="fixed left-6 bottom-6 z-[50] cursor-pointer"
+        className="fixed left-6 bottom-6 z-[70] cursor-pointer"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => setShowEmergencyAlert(true)}

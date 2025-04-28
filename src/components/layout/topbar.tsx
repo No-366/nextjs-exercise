@@ -52,7 +52,7 @@ export default function Topbar({ className }: TopbarProps) {
   return (
     <div
       className={cn(
-        "h-16 border-b px-6 flex items-center justify-between bg-background",
+        "h-16 border-b fixed top-0 right-0 left-0 md:left-72 bg-background z-[60] px-6 flex items-center justify-between",
         className
       )}
     >
